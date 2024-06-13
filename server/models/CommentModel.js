@@ -22,8 +22,14 @@ class CommentModel {
     //     WHERE comments.post_id = ?`;
     //     connection.query(query, [postId], callback);
     // }
-    static getCommentsByPostId(postId, callback) {
-        Comment.find({ post_id: postId }).populate('user_id', 'user_name').exec(callback);
+    static async getCommentsByPostId(postId) {
+        try {
+            const comments = await Comment.find({ post_id: postId }).populate('user_id', 'user_name').exec();
+            return comments;
+        } catch (error) {
+            console.log("Error in getCommentsByPostId:", error);
+            throw error;
+        }
     }
 
     // static createComment(commentData, callback) {
@@ -35,9 +41,15 @@ class CommentModel {
     //         callback(error, results);
     //     });
     // }  
-    static createComment(commentData, callback) {
-        const comment = new Comment(commentData);
-        comment.save(callback);
+    static async createComment(commentData) {
+        try {
+            const comment = new Comment(commentData);
+            const savedComment = await comment.save();
+            return savedComment;
+        } catch (error) {
+            console.log("Error in createComment:", error);
+            throw error;
+        }
     }
 }
 

@@ -1,11 +1,10 @@
-// const { post } = require('../routes/Posts.js');
-// const connection = require('./db.js');
-
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const LikeModel = require('./LikeModel'); 
+const UserModel = require('./UserModel'); 
 
 const postSchema = new Schema({
-    post_id: { type: Number, required: true },
+    post_id: { type: Number, required: true, unique: true },
     user_id: { type: String, required: true },
     image_url: { type: String, required: true },
     post_date: { type: Date, default: Date.now },
@@ -13,133 +12,87 @@ const postSchema = new Schema({
 
 const Post = mongoose.model('Post', postSchema);
 
-// class PostModel {
- 
-//     static getAllPosts(userId, callback) {
-//         const query = `
-//             SELECT 
-//             posts.*, 
-//             users.user_name, 
-//             COUNT(likes.post_id) AS likesCount,
-//             EXISTS (
-//                 SELECT 1
-//                 FROM likes
-//                 WHERE likes.post_id = posts.post_id AND likes.user_id = ?
-//             ) AS isLikedByCurrentUser
-//             FROM posts
-//             INNER JOIN users ON posts.user_id = users.user_id
-//             LEFT JOIN likes ON posts.post_id = likes.post_id
-//             GROUP BY posts.post_id, users.user_name;
-//         `;
-//         connection.query(query, [userId], callback);
-//     }
-
-//     static getPostById(postId, userId, callback) {
-//         const query = `
-//             SELECT 
-//             posts.*, 
-//             users.user_name, 
-//             COALESCE(COUNT(likes.post_id), 0) AS likesCount,
-//             EXISTS (
-//                 SELECT 1
-//                 FROM likes
-//                 WHERE likes.post_id = posts.post_id AND likes.user_id = ?
-//             ) AS isLikedByCurrentUser
-//             FROM posts 
-//             INNER JOIN users ON posts.user_id = users.user_id 
-//             LEFT JOIN likes ON posts.post_id = likes.post_id
-//             WHERE posts.post_id = ?
-//             GROUP BY posts.post_id, users.user_name;
-//         `;
-//         connection.query(query, [userId, postId], callback);
-//     }
-    
-
-//     static createPost(postData, callback) {
-//         const query = "INSERT INTO posts SET ?";
-//         connection.query(query, postData, callback);
-//     }
-
-
-// }
-
 class PostModel {
-    static getAllPosts(userId, callback) {
-        Post.aggregate([
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'user_id',
-                    foreignField: 'user_id',
-                    as: 'user'
-                }
-            },
-            { $unwind: '$user' },
-            {
-                $lookup: {
-                    from: 'likes',
-                    localField: 'post_id',
-                    foreignField: 'post_id',
-                    as: 'likes'
-                }
-            },
-            {
-                $addFields: {
-                    likesCount: { $size: '$likes' },
-                    isLikedByCurrentUser: {
-                        $in: [userId, '$likes.user_id']
-                    }
-                }
-            },
-            {
-                $project: {
-                    'user.password': 0, // 排除敏感字段
-                    'user.email': 0 // 排除敏感字段
-                }
+
+    static async getAllPosts(userId) {
+        try {
+            const posts = await Post.find()
+                .populate('user_id', 'user_name -_id') // 只选取 user_name 字段，并排除 _id
+                .lean(); // 使用 lean 方法返回普通的 JavaScript 对象
+            
+            for (const post of posts) {
+                post.likesCount = await new Promise((resolve, reject) => {
+                    LikeModel.getLikesByPostId(post.post_id, (error, userIds) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(userIds.length);
+                        }
+                    });
+                });
+                
+                post.isLikedByCurrentUser = await new Promise((resolve, reject) => {
+                    LikeModel.checkUserLike(userId, post.post_id, (error, hasLiked) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(hasLiked);
+                        }
+                    });
+                });
             }
-        ]).exec(callback);
+
+            return posts;
+        } catch (error) {
+            console.error("Error fetching all posts:", error);
+            throw error;
+        }
     }
 
-    static getPostById(postId, userId, callback) {
-        Post.aggregate([
-            { $match: { post_id: postId } },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'user_id',
-                    foreignField: 'user_id',
-                    as: 'user'
-                }
-            },
-            { $unwind: '$user' },
-            {
-                $lookup: {
-                    from: 'likes',
-                    localField: 'post_id',
-                    foreignField: 'post_id',
-                    as: 'likes'
-                }
-            },
-            {
-                $addFields: {
-                    likesCount: { $size: '$likes' },
-                    isLikedByCurrentUser: {
-                        $in: [userId, '$likes.user_id']
-                    }
-                }
-            },
-            {
-                $project: {
-                    'user.password': 0, // 排除敏感字段
-                    'user.email': 0 // 排除敏感字段
-                }
+    static async getPostById(postId, userId) {
+        try {
+            const post = await Post.findOne({ post_id: postId })
+                .populate('user_id', 'user_name -_id')
+                .lean();
+
+            if (post) {
+                post.likesCount = await new Promise((resolve, reject) => {
+                    LikeModel.getLikesByPostId(post.post_id, (error, userIds) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(userIds.length);
+                        }
+                    });
+                });
+                
+                post.isLikedByCurrentUser = await new Promise((resolve, reject) => {
+                    LikeModel.checkUserLike(userId, post.post_id, (error, hasLiked) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(hasLiked);
+                        }
+                    });
+                });
             }
-        ]).exec(callback);
+
+            return post;
+        } catch (error) {
+            console.error("Error fetching post by ID:", error);
+            throw error;
+        }
     }
 
-    static createPost(postData, callback) {
-        const post = new Post(postData);
-        post.save(callback);
+    static async createPost(postData) {
+        try {
+            const post = new Post(postData);
+            await post.save();
+            return post;
+        } catch (error) {
+            console.error("Error creating post:", error);
+            throw error;
+        }
     }
 }
 

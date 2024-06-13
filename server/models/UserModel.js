@@ -46,7 +46,7 @@ const User = mongoose.model('User', userSchema);
 // }
 
 class UserModel {
-    static register(username, password, callback) {
+    static async register(username, password) {
         const userId = UserModel.generateUniqueId();
         const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
         const newUser = new User({
@@ -55,28 +55,43 @@ class UserModel {
             user_password: hashedPassword,
         });
 
-        newUser.save((error) => {
-            callback(error, userId);
-        });
+        try {
+            await newUser.save();
+            return userId;
+        } catch (error) {
+            console.error("Error in register:", error);
+            throw error;
+        }
     }
 
-    static login(username, password, callback) {
+    static async login(username, password) {
         const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
-        User.findOne({ user_name: username, user_password: hashedPassword }, callback);
+        try {
+            const user = await User.findOne({ user_name: username, user_password: hashedPassword });
+            return user;
+        } catch (error) {
+            console.error("Error in login:", error);
+            throw error;
+        }
     }
 
     static generateUniqueId() {
         return Math.floor(Math.random() * 900000) + 100000;
     }
 
-    static resetPassword(username, newPassword, callback) {
+    static async resetPassword(username, newPassword) {
         const hashedPassword = crypto.createHash('sha256').update(newPassword).digest('hex');
-        User.findOneAndUpdate(
-            { user_name: username },
-            { user_password: hashedPassword },
-            { new: true },
-            callback
-        );
+        try {
+            const user = await User.findOneAndUpdate(
+                { user_name: username },
+                { user_password: hashedPassword },
+                { new: true }
+            );
+            return user;
+        } catch (error) {
+            console.error("Error in resetPassword:", error);
+            throw error;
+        }
     }
 }
 
