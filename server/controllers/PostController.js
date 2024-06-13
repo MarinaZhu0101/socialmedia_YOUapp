@@ -20,65 +20,62 @@ const upload = multer({ storage: storage }).single('image');
 
 class PostController {
     
-    static getAllPosts(req, res) {
-        const userId = req.user ? req.user.userId : undefined;
-        // console.log(`Fetching posts for user: ${userId}`);
+    static async getAllPosts(req, res) {
+        try {
+            const userId = req.user ? req.user.userId : undefined;
+            const posts = await PostModel.getAllPosts(userId);
 
-        PostModel.getAllPosts(userId, (error, results) => {
-            if (error) {
-                console.error("Error fetching posts:", error);
-                return res.status(500).send("Error fetching posts.");
+            if (!posts || posts.length === 0) {
+                return res.status(404).send('No posts found.');
             }
-            // console.log(`Fetched ${results.length} posts.`);
-        
-            const postsWithLikeStatus = results.map(post => ({
-                ...post,
-                isLikedByCurrentUser: post.isLikedByCurrentUser
-            }));
-        
-            res.json(postsWithLikeStatus);
-        });
 
+            res.json(posts);
+        } catch (error) {
+            console.error("Error fetching posts:", error);
+            res.status(500).send("Error fetching posts.");
+        }
     }
 
-    static getPostById(req, res) {
-        const postId = req.params.id;
-        const userId = req.user ? req.user.userId : undefined;
-        // console.log(`Fetching post with ID: ${postId} for user ID: ${userId}`);
-        PostModel.getPostById(postId, userId, (error, result) => {
-            if (error) {
-                console.error(error);
-                return res.status(500).send('Database query error.');
-            }
-            if (result.length === 0) {
+
+    static async getPostById(req, res) {
+        try {
+            const postId = req.params.id;
+            const userId = req.user ? req.user.userId : undefined;
+            const post = await PostModel.getPostById(postId, userId);
+
+            if (!post) {
                 return res.status(404).send('Post not found.');
             }
-            res.json(result[0]);
-        });
+
+            res.json(post);
+        } catch (error) {
+            console.error("Error fetching post by ID:", error);
+            res.status(500).send('Database query error.');
+        }
     }
 
     static createPost(req, res) {
-        upload(req, res, (uploadError) => {
+        upload(req, res, async (uploadError) => {
             if (uploadError) {
                 console.error(uploadError);
                 return res.status(500).send('File upload error.');
             }
-            const userId = req.user.userId;
-            const imagePath = "/uploads/" + req.file.filename;
-            const postData = {
-                user_id: userId,
-                image_url: imagePath,
-                post_date: new Date()
-            };
+            try {
+                const userId = req.user.userId;
+                const imagePath = "/uploads/" + req.file.filename;
+                const postData = {
+                    user_id: userId,
+                    image_url: imagePath,
+                    post_date: new Date()
+                };
 
-            PostModel.createPost(postData, (error, result) => {
-                if (error) {
-                    console.error(error);
-                    return res.status(500).send('Database query error.');
-                }
-                console.log("Image data saved to the database");
-                res.status(201).json({ message: "Image uploaded successfully", imagePath });
-            });
+                const post = await PostModel.createPost(postData);
+
+                res.status(201).json({ message: "Image uploaded successfully", post });
+            } catch (error) {
+                console.error("Error creating post:", error);
+                res.status(500).send('Database query error.');
+            }
         });
     }
     

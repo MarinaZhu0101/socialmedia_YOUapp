@@ -7,7 +7,7 @@ class CommentController {
             if (error) {
                 return res.status(500).send('Database query error.');
             }
-            if (comments.length === 0) {
+            if (!comments || comments.length === 0) {
                 return res.status(404).send('Post not found.');
             }
             res.json(comments);
