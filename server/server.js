@@ -1,8 +1,9 @@
 require("dotenv").config();
 const express = require('express');
-const mysql = require("mysql2");
+// const mysql = require("mysql2");
 const path = require("path");
 const cors = require('cors');
+const mongoose = require('./db'); 
 
 const app = express();
 
@@ -14,16 +15,16 @@ const DBCONFIG = {
     port: process.env.DB_PORT,
 };
 
-const connection = mysql.createConnection( DBCONFIG );
+// const connection = mysql.createConnection( DBCONFIG );
 
-function onConnectionReady(error) {
-    if (error != null) {
-        console.log(error);
-    } else {
-        console.log("connection successful");
-    }
-}
-connection.connect(onConnectionReady);
+// function onConnectionReady(error) {
+//     if (error != null) {
+//         console.log(error);
+//     } else {
+//         console.log("connection successful");
+//     }
+// }
+// connection.connect(onConnectionReady);
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
