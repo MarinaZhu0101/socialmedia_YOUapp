@@ -4,10 +4,11 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const commentSchema = new Schema({
-    post_id: { type: Schema.Types.ObjectId, ref: 'Post', required: true },
-    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    content: { type: String, required: true },
-    created_at: { type: Date, default: Date.now }
+    comment_id: { type: Number, required: true },
+    user_id: { type: Number, required: true },
+    post_id: { type: Number, required: true },
+    comment_date: { type: Date, default: Date.now },
+    comment_content: { type: String, required: true },
 });
 
 const Comment = mongoose.model('Comment', commentSchema);

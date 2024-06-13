@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const likeSchema = new Schema({
-    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    post_id: { type: Schema.Types.ObjectId, ref: 'Post', required: true },
+    like_id: { type: Number, required: true },
+    user_id: { type: Number, required: true },
+    post_id: { type: Number, required: true },
 });
 
 const Like = mongoose.model('Like', likeSchema);
