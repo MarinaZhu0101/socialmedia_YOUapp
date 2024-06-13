@@ -3,17 +3,17 @@ const express = require('express');
 // const mysql = require("mysql2");
 const path = require("path");
 const cors = require('cors');
-const mongoose = require('./db'); 
+const mongoose = require('./models/db'); 
 
 const app = express();
 
-const DBCONFIG = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
-};
+// const DBCONFIG = {
+//     host: process.env.DB_HOST,
+//     user: process.env.DB_USERNAME,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_DATABASE,
+//     port: process.env.DB_PORT,
+// };
 
 // const connection = mysql.createConnection( DBCONFIG );
 
