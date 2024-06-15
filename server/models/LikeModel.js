@@ -12,60 +12,30 @@ const likeSchema = new Schema({
 const Like = mongoose.model('Like', likeSchema);
 
 class LikeModel {
-    // static getLikesByPostId(postId, callback) {
-    //     const query = "SELECT user_id FROM likes WHERE post_id = ?";
-    //     connection.query(query, [postId], (error, results) => {
-    //         if (error) {
-    //             console.log("Error in getLikesDetailByPostId:", error);
-    //             return callback(error, null);
-    //         }
-      
-    //         const userIds = results.map(row => row.user_id);
-    //         callback(null, userIds);
-    //     });
-    // }
+
     static async getLikesByPostId(postId) {
         try {
+            // console.log(`Fetching likes for post ${postId}`); 
             const results = await Like.find({ post_id: postId }, 'user_id');
-            return results.map(like => like.user_id);
+            const userIds = results.map(like => like.user_id);
+            // console.log(`Fetched likes for post ${postId}:`, userIds); // 打印获取到的点赞信息
+            return userIds;
+
         } catch (error) {
             console.log("Error in getLikesByPostId:", error);
             throw error;
         }
     }
 
-    // static addLike(likeData, callback) {
-    //     this.checkUserLike(likeData.user_id, likeData.post_id, (error, hasLiked) => {
-    //         if (error) {
-    //             console.error("Error checking user like:", error);
-    //             return callback(error);
-    //         }
-    //         if (hasLiked) {
-    //             console.log("User already liked this post.");
-    //             return callback(null, { alreadyLiked: true, message: "User already liked this post." });
-    //         } else {
-    //             const query = "INSERT INTO likes SET ?";
-    //             connection.query(query, likeData, (error, results) => {
-    //                 if (error) {
-    //                     console.error("Error in addLike:", error);
-    //                     return callback(error, null);
-    //                 }
-    //                 console.log("Add like successful");
-    //                 callback(null, { success: true, message: "Like added successfully.", results });
-    //             });
-    //         }
-    //     });
-    // }
     static async addLike(likeData) {
         try {
             const hasLiked = await this.checkUserLike(likeData.user_id, likeData.post_id);
             if (hasLiked) {
-                console.log("User already liked this post.");
                 return { alreadyLiked: true, message: "User already liked this post." };
             } else {
-                const like = new Like(likeData);
+                const likeId = this.generateUniqueId();
+                const like = new Like({ ...likeData, like_id: likeId });
                 const result = await like.save();
-                console.log("Add like successful");
                 return { success: true, message: "Like added successfully.", result };
             }
         } catch (error) {
@@ -74,30 +44,6 @@ class LikeModel {
         }
     }
 
-
-    // static removeLike(userId, postId, callback) {
-
-    //     this.checkUserLike(userId, postId, (error, hasLiked) => {
-    //         if (error) {
-    //             console.error("Error checking user like before removal:", error);
-    //             return callback(error);
-    //         }
-    //         if (!hasLiked) {
-    //             console.log("No like found to remove.");
-    //             return callback(null, { notFound: true, message: "Like not found." });
-    //         } else {
-    //             const query = "DELETE FROM likes WHERE user_id = ? AND post_id = ?";
-    //             connection.query(query, [userId, postId], (error, results) => {
-    //                 if (error) {
-    //                     console.error("Error in removeLike:", error);
-    //                     return callback(error);
-    //                 }
-    //                 console.log("Remove like successful");
-    //                 callback(null, { success: true, message: "Like removed successfully.", results });
-    //             });
-    //         }
-    //     });
-    // }
     static async removeLike(userId, postId) {
         try {
             const hasLiked = await this.checkUserLike(userId, postId);
@@ -115,24 +61,21 @@ class LikeModel {
         }
     }
     
-    // static checkUserLike(userId, postId, callback) {
-    //     const query = "SELECT * FROM likes WHERE user_id = ? AND post_id = ?";
-    //     connection.query(query, [userId, postId], (error, results) => {
-    //         if (error) {
-    //             console.log("Error in checkUserLike:", error);
-    //         }
-    //         const hasLiked = results.length > 0;
-    //         callback(error, hasLiked);
-    //     });
-    // }
     static async checkUserLike(userId, postId) {
         try {
+            // console.log(`Checking if user ${userId} likes post ${postId}`); 
             const result = await Like.findOne({ user_id: userId, post_id: postId });
-            return !!result;
+            const hasLiked = !!result;
+            // console.log(`User ${userId} likes post ${postId}:`, hasLiked); // 打印检查结果
+            return hasLiked;
         } catch (error) {
             console.log("Error in checkUserLike:", error);
             throw error;
         }
+    }
+
+    static generateUniqueId() {
+        return Math.floor(Math.random() * 900000) + 100000;
     }
 
 }

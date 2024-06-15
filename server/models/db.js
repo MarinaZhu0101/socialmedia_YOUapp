@@ -3,9 +3,6 @@ const mongoose = require('mongoose');
 
 const DBCONFIG = {
     uri: process.env.DB_URI,
-    options: {
-        serverSelectionTimeoutMS: 30000, 
-    },
 };
 
 mongoose.connect(DBCONFIG.uri, DBCONFIG.options)

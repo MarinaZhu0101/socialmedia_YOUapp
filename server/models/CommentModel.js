@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const { User } = require('./UserModel'); 
 
 const commentSchema = new Schema({
     comment_id: { type: Number, required: true },
@@ -14,17 +15,21 @@ const commentSchema = new Schema({
 const Comment = mongoose.model('Comment', commentSchema);
 
 class CommentModel {
-    // static getCommentsByPostId(postId, callback) {
-    //     const query = `
-    //     SELECT comments.*, users.user_name 
-    //     FROM comments 
-    //     INNER JOIN users ON comments.user_id = users.user_id
-    //     WHERE comments.post_id = ?`;
-    //     connection.query(query, [postId], callback);
-    // }
     static async getCommentsByPostId(postId) {
         try {
-            const comments = await Comment.find({ post_id: postId }).populate('user_id', 'user_name').exec();
+            // console.log(`Fetching comments for post ${postId}`); 
+             // Fetch comments for the given post ID
+            const comments = await Comment.find({ post_id: postId }).lean();
+            for (const comment of comments) {
+                // Manually query user_name
+                const user = await User.findOne({ user_id: comment.user_id }).select('user_name').lean();
+                if (user) {
+                    comment.user_name = user.user_name;
+                } else {
+                    comment.user_name = 'Unknown User';
+                }
+            }
+            // console.log("comments data:", comments); 
             return comments;
         } catch (error) {
             console.log("Error in getCommentsByPostId:", error);
@@ -32,24 +37,30 @@ class CommentModel {
         }
     }
 
-    // static createComment(commentData, callback) {
-    //     const query = "INSERT INTO comments SET ?";
-    //     connection.query(query, commentData, (error, results) => {
-    //         if (error) {
-    //             console.log("Error in createComment:", error);
-    //         }
-    //         callback(error, results);
-    //     });
-    // }  
     static async createComment(commentData) {
         try {
-            const comment = new Comment(commentData);
+            const commentId = this.generateUniqueId();
+            const comment = new Comment({ ...commentData, comment_id: commentId });
             const savedComment = await comment.save();
-            return savedComment;
+
+             // Fetch the user_name and add it to the saved comment
+             const user = await User.findOne({ user_id: savedComment.user_id }).select('user_name').lean();
+             const savedCommentWithUserName = savedComment.toObject();
+             if (user) {
+                 savedCommentWithUserName.user_name = user.user_name;
+             } else {
+                 savedCommentWithUserName.user_name = 'Unknown User';
+             }
+
+            return savedCommentWithUserName;
         } catch (error) {
             console.log("Error in createComment:", error);
             throw error;
         }
+    }
+
+    static generateUniqueId() {
+        return Math.floor(Math.random() * 900000) + 100000;
     }
 }
 
