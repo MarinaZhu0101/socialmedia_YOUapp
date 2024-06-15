@@ -2,61 +2,54 @@ const LikeModel = require("../models/LikeModel");
 
 class LikeController{
 
-    static toggleLike(req, res) {
+    static async toggleLike(req, res) {
         const userId = req.user.userId;
         const { postId, action } = req.body; 
 
-        const updateLikesDetail = () => {
-            LikeModel.getLikesByPostId(postId, (error, userIds) => {
-                if (error) {
-                    console.error("Error in getLikesByPostId:", error);
-                    return res.status(500).send('Database query error.');
-                }
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated.' });
+        }
+
+        const updateLikesDetail = async () => {
+            try {
+                const userIds = await LikeModel.getLikesByPostId(postId);
                 const isLikedByCurrentUser = userIds.map(id => id.toString()).includes(userId.toString());
                 const likesCount = userIds.length;
                 res.json({
                     message: action === 'like' ? 'Like added successfully.' : 'Like removed successfully.',
-                    likes: userIds, 
-                    isLikedByCurrentUser: isLikedByCurrentUser, 
-                    likesCount: likesCount
+                    likes: userIds,
+                    isLikedByCurrentUser,
+                    likesCount
                 });
-            });
+            } catch (error) {
+                console.error("Error in getLikesByPostId:", error);
+                res.status(500).send('Database query error.');
+            }
         };
 
-        if (action === 'like') {
-            const likeData = { user_id: userId, post_id: postId };
-            LikeModel.addLike(likeData, function(error, result) {
-                if (error) {
-                    return res.status(500).send('Database query error.');
+        try {
+            if (action === 'like') {
+                const likeData = { user_id: userId, post_id: postId };
+                const result = await LikeModel.addLike(likeData);
+                if (result.alreadyLiked) {
+                    return res.status(400).json(result);
                 }
                 updateLikesDetail();
-
-            });
-        }
-
-        else if (action === 'unlike') {
-            LikeModel.checkUserLike(userId, postId, (error, hasLiked) => {
-                if (error) {
-                    return res.status(500).send('Database query error.');
-                }
+            } else if (action === 'unlike') {
+                const hasLiked = await LikeModel.checkUserLike(userId, postId);
                 if (!hasLiked) {
                     return res.status(404).json({ message: 'Like not found.' });
                 }
-                LikeModel.removeLike(userId, postId, (error) => {
-                    if (error) {
-                        return res.status(500).send('Error removing like.');
-                    }
-                    updateLikesDetail();
-
-                });
-            });
-        }
-
-        else {
-            return res.status(400).json({ message: 'Invalid action specified.' });
+                await LikeModel.removeLike(userId, postId);
+                updateLikesDetail();
+            } else {
+                return res.status(400).json({ message: 'Invalid action specified.' });
+            }
+        } catch (error) {
+            console.error("Database query error:", error);
+            res.status(500).send('Database query error.');
         }
     }
-
 
 }
 

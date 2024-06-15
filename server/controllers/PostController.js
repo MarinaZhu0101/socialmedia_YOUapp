@@ -22,20 +22,25 @@ class PostController {
     
     static async getAllPosts(req, res) {
         try {
+            // console.log("Request received."); 
             const userId = req.user ? req.user.userId : undefined;
+            // console.log("User ID:", userId); 
+
             const posts = await PostModel.getAllPosts(userId);
+            // console.log("Fetched posts:", posts);
 
             if (!posts || posts.length === 0) {
+                console.log("No posts found.");
                 return res.status(404).send('No posts found.');
             }
 
             res.json(posts);
+            //res.status(200).send("ok");
         } catch (error) {
             console.error("Error fetching posts:", error);
             res.status(500).send("Error fetching posts.");
         }
     }
-
 
     static async getPostById(req, res) {
         try {
@@ -61,7 +66,7 @@ class PostController {
                 return res.status(500).send('File upload error.');
             }
             try {
-                const userId = req.user.userId;
+                const userId = req.user.userId; 
                 const imagePath = "/uploads/" + req.file.filename;
                 const postData = {
                     user_id: userId,
