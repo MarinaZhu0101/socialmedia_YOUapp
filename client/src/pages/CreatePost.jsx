@@ -56,7 +56,7 @@ function CreatePost() {
       return;
     }
 
-    axios.post(`${apiUrl}/posts`, formdata, {
+    axios.post('https://you-app-tau.vercel.app/posts', formdata, {
       headers: {
         'Authorization': `Bearer ${accessToken}`, 
       }
