@@ -3,12 +3,33 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const LikeModel = require('../models/LikeModel');
+const cloudinary = require('cloudinary').v2;
 
 //save in uploads file
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         const uploadsDir = path.join(__dirname, '../uploads');
+//         fs.mkdirSync(uploadsDir, { recursive: true });
+//         cb(null, uploadsDir);
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
+//     }
+// });
+
+cloudinary.config({
+    cloud_name: 'ddpcfgovd',
+    api_key: '942634993361433',
+    api_secret: 'pPtxHwZr62uWa1-P_8gpIiQZLFM'
+  });
+
+// Configure Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadsDir = path.join(__dirname, '../uploads');
-        fs.mkdirSync(uploadsDir, { recursive: true });
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
         cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
@@ -17,6 +38,9 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage }).single('image');
+
+
+
 
 class PostController {
     
@@ -67,10 +91,28 @@ class PostController {
             }
             try {
                 const userId = req.user.userId; 
-                const imagePath = "/uploads/" + req.file.filename;
+                // const imagePath = req.file.path;
+                // const postData = {
+                //     user_id: userId,
+                //     image_url: imagePath,
+                //     post_date: new Date()
+                // };
+
+                // Upload file to Cloudinary
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: '', // Upload to the root directory
+                    public_id: req.file.filename,
+                    use_filename: true,
+                    unique_filename: false
+                });
+
+                // Delete the file from the local uploads directory
+                fs.unlinkSync(req.file.path);
+
+                // Save post data to the database
                 const postData = {
                     user_id: userId,
-                    image_url: imagePath,
+                    image_url: result.secure_url,
                     post_date: new Date()
                 };
 
