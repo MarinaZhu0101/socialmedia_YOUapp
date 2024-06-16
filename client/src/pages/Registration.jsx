@@ -14,7 +14,7 @@ function Registration() {
     const handleRegister = (e) => {
         e.preventDefault();
     
-        axios.post('http://localhost:5050/auth/registration', { username, password })
+        axios.post(`${apiUrl}/auth/registration`, { username, password })
           .then(res => {
             const userId = res.data.userId; 
             setSuccess(`Congratulations! You have successfully registered. Your unique ID is: ${userId}`); 
