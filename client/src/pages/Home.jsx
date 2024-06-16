@@ -17,7 +17,7 @@ function Home() {
           try {
               const accessToken = sessionStorage.getItem("accessToken");
               const config = accessToken ? { headers: { 'Authorization': `Bearer ${accessToken}` } } : {};
-              const response = await axios.get('https://you-app-tau.vercel.app/posts', config);
+              const response = await axios.get('https://you-app-backend.vercel.app/posts', config);
               
               const postsData = response.data.map(post => ({
                   ...post,
@@ -41,7 +41,7 @@ function Home() {
           return;
         }
 
-        axios.post('https://you-app-tau.vercel.app/likes',{ 
+        axios.post('https://you-app-backend.vercel.app/likes',{ 
           postId: postId,
           action: currentlyLiked ? 'unlike' : 'like'
         }, {
