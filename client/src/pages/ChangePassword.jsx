@@ -11,7 +11,7 @@ function ChangePassword() {
     const handleResetpassword = (e) => {
         e.preventDefault();
     
-        axios.post('https://you-app-tau.vercel.app/auth/resetpassword', { username, password })
+        axios.post('https://you-app-backend.vercel.app/auth/resetpassword', { username, password })
           .then(res => {
             console.log(res);
             navigate('/login'); 
