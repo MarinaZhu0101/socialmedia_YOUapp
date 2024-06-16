@@ -16,7 +16,7 @@ function Login() {
   const handleRegister = (e) => {
       e.preventDefault();
   
-      axios.post('http://localhost:5050/auth/login', { username, password })
+      axios.post(`${apiUrl}/auth/login`, { username, password })
         .then(res => {
           sessionStorage.setItem("accessToken", res.data.token);
           setAuthState(true);
