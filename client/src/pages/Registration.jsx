@@ -14,7 +14,7 @@ function Registration() {
     const handleRegister = (e) => {
         e.preventDefault();
     
-        axios.post('https://you-app-tau.vercel.app/auth/registration', { username, password })
+        axios.post('https://you-app-backend.vercel.app/auth/registration', { username, password })
           .then(res => {
             const userId = res.data.userId; 
             setSuccess(`Congratulations! You have successfully registered. Your unique ID is: ${userId}`); 
