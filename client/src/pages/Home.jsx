@@ -41,7 +41,7 @@ function Home() {
           return;
         }
 
-        axios.post('http://localhost:5050/likes',{ 
+        axios.post(`${apiUrl}/likes`,{ 
           postId: postId,
           action: currentlyLiked ? 'unlike' : 'like'
         }, {
