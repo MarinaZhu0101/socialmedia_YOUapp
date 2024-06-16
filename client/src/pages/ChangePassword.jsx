@@ -11,7 +11,7 @@ function ChangePassword() {
     const handleResetpassword = (e) => {
         e.preventDefault();
     
-        axios.post('http://localhost:5050/auth/resetpassword', { username, password })
+        axios.post(`${apiUrl}/auth/resetpassword`, { username, password })
           .then(res => {
             console.log(res);
             navigate('/login'); 
