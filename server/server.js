@@ -27,20 +27,11 @@ const app = express();
 // connection.connect(onConnectionReady);
 
 // CORS configuration
-const corsOptions = {
-  origin: '*',
-  methods: 'GET,POST,PUT,DELETE,OPTIONS',
-  credentials: true // if you need to send cookies or use authentication
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); //通过express设置静态文件服务访问
-
-// Preflight request handling
-app.options('*', cors(corsOptions));
 
 const port = 5050;
 
