@@ -32,7 +32,7 @@ function Post() {
     const accessToken = sessionStorage.getItem("accessToken");
     const authHeader = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
       
-    axios.get(`http://localhost:5050/posts/byId/${id}`, {
+    axios.get(`${apiUrl}/posts/byId/${id}`, {
       headers: authHeader
     })
     .then(res => {
@@ -43,7 +43,7 @@ function Post() {
     })
     .catch(err => console.log(err));
 
-    axios.get(`http://localhost:5050/comments/${id}`)
+    axios.get(`${apiUrl}/comments/${id}`)
     .then(res => {
       setComment(Array.isArray(res.data) ? res.data : []);
     })
@@ -80,14 +80,14 @@ const handleCommentSubmit = (e) => {
     setErrorMessage(''); 
   }
 
-  axios.post(`http://localhost:5050/comments/${id}`, { comment: commentContent }, {
+  axios.post(`${apiUrl}/comments/${id}`, { comment: commentContent }, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
     },
   })
   .then(res => {
-    axios.get(`http://localhost:5050/comments/${id}`)
+    axios.get(`${apiUrl}/comments/${id}`)
     .then(res => {
       setComment(Array.isArray(res.data) ? res.data : []);
       setCommentContent(''); 
@@ -112,7 +112,7 @@ const handleCommentSubmit = (e) => {
         return;
       }
 
-      axios.post('http://localhost:5050/likes',{ 
+      axios.post(`${apiUrl}/likes`,{ 
         postId: postId,
         action: currentlyLiked ? 'unlike' : 'like'
       }, {
