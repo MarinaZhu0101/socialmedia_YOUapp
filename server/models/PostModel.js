@@ -125,13 +125,18 @@ class PostModel {
 
     static async createPost(postData) {
         try {
-            const post = new Post(postData);
-            await post.save();
-            return post;
+            const postId = this.generateUniqueId();
+            const post = new Post({ ...postData, post_id: postId });
+            const savedPost = await post.save();
+            return savedPost;
         } catch (error) {
             console.error("Error creating post:", error);
             throw error;
         }
+    }
+
+    static generateUniqueId() {
+        return Math.floor(Math.random() * 900000) + 100000;
     }
 }
 
