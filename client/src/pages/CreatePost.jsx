@@ -56,7 +56,7 @@ function CreatePost() {
       return;
     }
 
-    axios.post('http://localhost:5050/posts', formdata, {
+    axios.post(`${apiUrl}/posts`, formdata, {
       headers: {
         'Authorization': `Bearer ${accessToken}`, 
       }
