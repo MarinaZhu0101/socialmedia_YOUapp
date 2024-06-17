@@ -54,5 +54,3 @@ const LikesRouter = require('./routes/Likes');
 app.use("/likes", LikesRouter);
 
 app.listen(port, () => console.log(`APP listening on port ${port}!`));
-
-//
