@@ -21,6 +21,7 @@ class PostModel {
             //     .populate({ path: 'user_id', select: 'user_name', model: User}) 
             //     .lean(); // 使用 lean 方法返回普通的 JavaScript 对象
             const posts = await Post.find().lean();
+            //降序排列
             
             for (const post of posts) {
                 // console.log("Processing post:", post.post_id);
