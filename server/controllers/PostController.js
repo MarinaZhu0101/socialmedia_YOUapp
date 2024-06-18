@@ -5,7 +5,7 @@ const fs = require('fs');
 const LikeModel = require('../models/LikeModel');
 const cloudinary = require('cloudinary').v2;
 
-//save in uploads file
+// save in uploads file
 // const storage = multer.diskStorage({
 //     destination: (req, file, cb) => {
 //         const uploadsDir = path.join(__dirname, '../uploads');
@@ -24,23 +24,25 @@ cloudinary.config({
   });
 
 // Configure Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadsDir = path.join(__dirname, '../uploads');
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-    }
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         const uploadsDir = path.join(__dirname, '../uploads');
+//         if (!fs.existsSync(uploadsDir)) {
+//             fs.mkdirSync(uploadsDir, { recursive: true });
+//         }
+//         cb(null, uploadsDir);
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
+//     }
+// });
 
+// const upload = multer({ storage: storage }).single('image');
+
+
+// // Configure Multer to store files in memory
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('image');
-
-
-
 
 class PostController {
     
@@ -83,50 +85,85 @@ class PostController {
         }
     }
 
+    // static createPost(req, res) {
+    //     upload(req, res, async (uploadError) => {
+    //         if (uploadError) {
+    //             console.error(uploadError);
+    //             return res.status(500).send('111111111');
+    //         }
+    //         try {
+    //             const userId = req.user.userId;
+    //             // Upload file to Cloudinary
+    //             const result = await cloudinary.uploader.upload(req.file.path, {
+    //                 format: 'jpg',
+    //                 folder: '', // Upload to the root directory
+    //                 public_id: req.file.filename,
+    //                 use_filename: true,
+    //                 unique_filename: false
+    //             });
+
+    //             // Delete the file from the local uploads directory
+    //             fs.unlinkSync(req.file.path);
+
+    //             // Save post data to the database
+    //             const postData = {
+    //                 user_id: userId,
+    //                 image_url: result.secure_url,
+    //                 post_date: new Date()
+    //             };
+
+    //             const post = await PostModel.createPost(postData);
+
+    //             res.status(201).json({ message: "Image uploaded successfully", post });
+    //         } catch (error) {
+    //             console.error("Error creating post:", error);
+    //             res.status(500).send('Database query error.');
+    //         }
+    //     });
+    // }
+
     static createPost(req, res) {
         upload(req, res, async (uploadError) => {
             if (uploadError) {
                 console.error(uploadError);
-                return res.status(500).send('111111111');
+                return res.status(500).send('11111111');
             }
             try {
-                const userId = req.user.userId; 
-                // const imagePath = req.file.path;
-                // const postData = {
-                //     user_id: userId,
-                //     image_url: imagePath,
-                //     post_date: new Date()
-                // };
+                const userId = req.user.userId;
 
-                // Upload file to Cloudinary
-                const result = await cloudinary.uploader.upload(req.file.path, {
-                    format: 'jpg',
-                    folder: '', // Upload to the root directory
-                    public_id: req.file.filename,
-                    use_filename: true,
-                    unique_filename: false
+                // Upload file to Cloudinary from memory
+                const result = await cloudinary.uploader.upload_stream({ folder: '', use_filename: true, unique_filename: false }, (error, result) => {
+                    if (error) {
+                        console.error("Cloudinary upload error:", error);
+                        return res.status(500).send('Error uploading to Cloudinary');
+                    }
+                    
+                    // Save post data to the database
+                    const postData = {
+                        user_id: userId,
+                        image_url: result.secure_url,
+                        post_date: new Date()
+                    };
+
+                    // Create the post in the database
+                    PostModel.createPost(postData)
+                        .then(post => {
+                            res.status(201).json({ message: "Image uploaded successfully", post });
+                        })
+                        .catch(error => {
+                            console.error("Error creating post:", error);
+                            res.status(500).send('Database query error.');
+                        });
                 });
 
-                // Delete the file from the local uploads directory
-                fs.unlinkSync(req.file.path);
-
-                // Save post data to the database
-                const postData = {
-                    user_id: userId,
-                    image_url: result.secure_url,
-                    post_date: new Date()
-                };
-
-                const post = await PostModel.createPost(postData);
-
-                res.status(201).json({ message: "Image uploaded successfully", post });
+                // Pipe the file buffer to the Cloudinary uploader
+                result.end(req.file.buffer);
             } catch (error) {
                 console.error("Error creating post:", error);
                 res.status(500).send('Database query error.');
             }
         });
     }
-    
 }
 
 module.exports = PostController;
