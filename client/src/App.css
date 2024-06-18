@@ -441,7 +441,7 @@ body {
 
 
   /* General Styles for Mobile - Targeting screens up to 375px width */
-@media (max-width: 375px) {
+@media (max-width: 410px) {
   /* Adjust body padding for smaller screens */
   body {
       padding: 5px;
