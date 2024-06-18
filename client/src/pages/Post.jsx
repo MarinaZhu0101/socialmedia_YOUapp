@@ -45,7 +45,10 @@ function Post() {
 
     axios.get(`https://you-app-backend.vercel.app/comments/${id}`)
     .then(res => {
-      setComment(Array.isArray(res.data) ? res.data : []);
+      // setComment(Array.isArray(res.data) ? res.data : []);
+      // Sort comments by comment_date in descending order
+      const sortedComments = Array.isArray(res.data) ? res.data.sort((a, b) => new Date(b.comment_date) - new Date(a.comment_date)) : [];
+      setComment(sortedComments);
     })
     .catch(err => console.log(err));
 

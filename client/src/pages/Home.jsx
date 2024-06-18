@@ -23,6 +23,11 @@ function Home() {
                   ...post,
                   isLikedByCurrentUser: Boolean(post.isLikedByCurrentUser)
               }));
+
+
+              // Sort posts by post_date in descending order
+              postsData.sort((a, b) => new Date(b.post_date) - new Date(a.post_date));
+
               setData(postsData);
               // console.log("Data received from backend:", postsData);
           } catch (err) {
