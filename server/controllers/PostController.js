@@ -115,6 +115,7 @@ class PostController {
             try {
                 const userId = req.user.userId;
 
+                console.log(req.file);
                 // Upload file to Cloudinary from memory
                 const result = await cloudinary.uploader.upload_stream({ 
                     format: 'jpg',
