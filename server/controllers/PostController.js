@@ -132,7 +132,13 @@ class PostController {
                 const userId = req.user.userId;
 
                 // Upload file to Cloudinary from memory
-                const result = await cloudinary.uploader.upload_stream({ folder: '', use_filename: true, unique_filename: false }, (error, result) => {
+                const result = await cloudinary.uploader.upload_stream({ 
+                    format: 'jpg',
+                    public_id: req.file.filename,
+                    folder: '', 
+                    use_filename: true, 
+                    unique_filename: false 
+                }, (error, result) => {
                     if (error) {
                         console.error("Cloudinary upload error:", error);
                         return res.status(500).send('Error uploading to Cloudinary');
