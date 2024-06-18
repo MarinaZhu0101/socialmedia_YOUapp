@@ -23,22 +23,6 @@ cloudinary.config({
     api_secret: 'pPtxHwZr62uWa1-P_8gpIiQZLFM'
   });
 
-// Configure Multer
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         const uploadsDir = path.join(__dirname, '../uploads');
-//         if (!fs.existsSync(uploadsDir)) {
-//             fs.mkdirSync(uploadsDir, { recursive: true });
-//         }
-//         cb(null, uploadsDir);
-//     },
-//     filename: (req, file, cb) => {
-//         cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-//     }
-// });
-
-// const upload = multer({ storage: storage }).single('image');
-
 
 // // Configure Multer to store files in memory
 const storage = multer.memoryStorage();
@@ -126,7 +110,7 @@ class PostController {
         upload(req, res, async (uploadError) => {
             if (uploadError) {
                 console.error(uploadError);
-                return res.status(500).send('11111111');
+                return res.status(500).send('File upload error.');
             }
             try {
                 const userId = req.user.userId;
@@ -134,7 +118,7 @@ class PostController {
                 // Upload file to Cloudinary from memory
                 const result = await cloudinary.uploader.upload_stream({ 
                     format: 'jpg',
-                    public_id: req.file.filename,
+                    public_id: 'hello',
                     folder: '', 
                     use_filename: true, 
                     unique_filename: false 
