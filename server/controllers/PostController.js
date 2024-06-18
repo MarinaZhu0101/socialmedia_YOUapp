@@ -100,6 +100,7 @@ class PostController {
 
                 // Upload file to Cloudinary
                 const result = await cloudinary.uploader.upload(req.file.path, {
+                    format: 'jpg',
                     folder: '', // Upload to the root directory
                     public_id: req.file.filename,
                     use_filename: true,
