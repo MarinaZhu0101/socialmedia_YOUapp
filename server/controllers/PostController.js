@@ -87,7 +87,7 @@ class PostController {
         upload(req, res, async (uploadError) => {
             if (uploadError) {
                 console.error(uploadError);
-                return res.status(500).send('File upload error.');
+                return res.status(500).send('111111111');
             }
             try {
                 const userId = req.user.userId; 
