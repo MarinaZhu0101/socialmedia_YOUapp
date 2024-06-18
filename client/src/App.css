@@ -438,3 +438,111 @@ body {
     font-size: 0.8em;
     color: gray;
   }
+
+
+  /* General Styles for Mobile - Targeting screens up to 375px width */
+@media (max-width: 375px) {
+  /* Adjust body padding for smaller screens */
+  body {
+      padding: 5px;
+  }
+
+  /* Navbar adjustments */
+  .navbar {
+      height: auto;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 5px;
+  }
+  .navbar .left, .navbar .right {
+      margin: 0;
+      flex-direction: column;
+      align-items: flex-start;
+  }
+  .navbar a, .navbar button {
+      margin: 5px 0;
+      font-size: 14px;
+  }
+
+  /* Post page adjustments */
+  .posts-page {
+      width: 100%;
+      padding-top: 10px;
+  }
+
+  .post {
+      width: 100%;
+      height: auto;
+      margin-top: 20px;
+  }
+  .post .user {
+      font-size: 1rem; /* Smaller font size for better fit */
+  }
+  .post .poster {
+      width: 100%;
+      height: auto;
+  }
+  .post .poster img {
+      width: 100%; /* Make the image take the full width */
+      height: auto;
+  }
+  .post .footer {
+      justify-content: space-between;
+      padding: 0 5px;
+  }
+  .footer .commentIcon {
+      margin-right: 10px;
+  }
+
+  /* Create post page adjustments */
+  .createpost-page, .create {
+      width: 100%;
+      padding: 5px;
+  }
+  .create img {
+      max-width: 100%;
+      max-height: auto;
+  }
+  .custom-file-upload, .upload {
+      width: 100%;
+      font-size: 12px;
+      padding: 8px 10px;
+  }
+
+  /* Single post page adjustments */
+  .single-post {
+      width: 100%;
+  }
+  .single-post .user {
+      flex-direction: row;
+      align-items: center;
+      height: auto;
+  }
+  .single-post .poster {
+      width: 100%;
+  }
+  .single-post .poster img {
+      width: 100%; /* Make the image take the full width */
+      height: auto;
+  }
+  .single-post .footer {
+      padding-left: 10px;
+      justify-content: center;
+  }
+
+  /* Comment section adjustments */
+  .comment-section {
+      width: 100%;
+      padding: 5px;
+  }
+  .comment-input {
+      width: 100%;
+  }
+  .comment-item {
+      width: 100%;
+      padding: 5px;
+  }
+  .comment-content {
+      padding-left: 5px;
+  }
+}
